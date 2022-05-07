@@ -1,12 +1,3 @@
-'''Calibrate the model before passing the test data to "find_conc.py"'''
-
-import pandas as pd 
-import sys 
-
-filename = sys.argv[1]
-
-master_df = pd.read_csv(str(filename))
-
 def clean_data(df):
     #Remove unnecessary lines
     df = df.copy().dropna().reset_index().drop(['index', 'User: USER', 'Unnamed: 1'], axis=1)
@@ -16,3 +7,6 @@ def clean_data(df):
     df = df.astype('float')
 
 
+def get_blank_data(df):
+    df = df.tail(3)
+    df = df.groupby(by='Dilution').mean()
