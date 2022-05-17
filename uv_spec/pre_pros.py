@@ -23,5 +23,5 @@ def simple_samples(df):
 
 
 def norm_samples(df):
-    return simple_samples(df).subtract(blank_data(df))
+    return simple_samples(df).subtract(blank_data(df).values.squeeze())
 
