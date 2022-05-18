@@ -1,4 +1,4 @@
-import pre_pros 
+import plot_spec, pre_pros 
 
 from matplotlib import pyplot as plt
 import pandas as pd 
@@ -9,8 +9,12 @@ import sys
 df = pd.read_csv("data/calibration.csv")
 
 
+
 def main():
-    pre_pros.norm_samples(df).T.plot(xlabel="Wavelength (nm)", ylabel="Absorbance (au)", title="Calibration Spectra", figsize=(15,9))
+    
+    
+    
+    plot_spec.plot(pre_pros.norm_samples(df))
     plt.show()
 
 if __name__ == '__main__':
