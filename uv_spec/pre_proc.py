@@ -1,3 +1,5 @@
+
+from scipy.stats import linregress
 def restructure_data(df):
     #Remove unnecessary lines
     df = df.copy().dropna().reset_index().drop(['index', 'User: USER', 'Unnamed: 1'], axis=1)
