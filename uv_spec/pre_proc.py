@@ -26,7 +26,7 @@ def norm_samples(df):
 
 
 def get_calibration_data(df):
-    procd_data = pre_pros.norm_samples(df).T
+    procd_data = norm_samples(df).T
     max_idx = procd_data[[1]].idxmax().values[0]
     max_abs = procd_data.loc[max_idx].values
     conc = [50/i for i in procd_data.columns]
