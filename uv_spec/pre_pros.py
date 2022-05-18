@@ -7,7 +7,6 @@ def restructure_data(df):
     return df.astype('float')
     
 
-
 def blank_data(df):
     df = restructure_data(df)
     #Blanks are teh final three rows
@@ -24,4 +23,13 @@ def simple_samples(df):
 
 def norm_samples(df):
     return simple_samples(df).subtract(blank_data(df).values.squeeze())
+
+
+def get_calibration_data(df):
+    procd_data = pre_pros.norm_samples(df).T
+    max_idx = procd_data[[1]].idxmax().values[0]
+    max_abs = procd_data.loc[max_idx].values
+    conc = [50/i for i in procd_data.columns]
+    slope = linregress(conc, max_abs)[0]
+    return slope, max_idx
 
