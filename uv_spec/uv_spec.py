@@ -9,14 +9,16 @@ import sys
 
 df = pd.read_csv("data/calibration.csv")
 
-def calibrate(df):
+def get_calibration_slope(df):
     procd_data = pre_pros.norm_samples(df).T
     max_idx = procd_data[[1]].idxmax().values[0]
     max_abs = procd_data.loc[max_idx].values
     conc = [50/i for i in procd_data.columns]
     slope = linregress(conc, max_abs)[0]
-    
+    return slope
 
+def prep_unknown_sample(df):
+    
 
 
 
@@ -25,7 +27,7 @@ def main():
     
     
     
-    plot_spec.plot(pre_pros.norm_samples(df))
+    plot_spec.plot_spec(pre_pros.norm_samples(df))
     plt.show()
 
 if __name__ == '__main__':
