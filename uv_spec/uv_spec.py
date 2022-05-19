@@ -11,8 +11,8 @@ unknown_spl = pd.read_csv("data/sample.csv")
 
 
 def main():
-    plot_spec.plot_spec(pre_proc.norm_samples(df))
-    plt.show()
+    #plot_spec.plot_spec(pre_proc.norm_samples(df))
+    #plt.show()
 
 
     slope, max_idx = pre_proc.get_calibration_data(df)
@@ -20,7 +20,7 @@ def main():
     spl_abs_max = spl_df[max_idx][:3].mean()
     concentration = spl_abs_max/slope
 
-    print("The unknown sample concentration is {0}", concentration)
+    print("The unknown sample concentration is ", round(concentration, 1),"\u00B10.5mg")
 
 if __name__ == '__main__':
     main()
