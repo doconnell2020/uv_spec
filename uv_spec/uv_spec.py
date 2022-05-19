@@ -10,6 +10,13 @@ import sys
 df = pd.read_csv("data/calibration.csv")
 unknown_spl = pd.read_csv("data/sample.csv")
 
+def plot_spec(df):
+    return df.copy().T.plot(
+        xlabel="Wavelength (nm)", 
+        ylabel="Absorbance (au)", 
+        title="Calibration Spectra", 
+        figsize=(15,9))
+
 def get_calibration_data(df):
     procd_data = norm_samples(df).T
     max_idx = procd_data[[1]].idxmax().values[0]
@@ -20,8 +27,8 @@ def get_calibration_data(df):
 
 
 def main():
-    #plot_spec.plot_spec(pre_proc.norm_samples(df))
-    #plt.show()
+    plot_spec(pre_proc.norm_samples(df))
+    plt.show()
 
 
     slope, max_idx = pre_proc.get_calibration_data(df)
