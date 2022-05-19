@@ -1,5 +1,4 @@
 
-from scipy.stats import linregress
 def restructure_data(df):
     #Remove unnecessary lines
     df = df.copy().dropna().reset_index().drop(['index', 'User: USER', 'Unnamed: 1'], axis=1)
@@ -25,13 +24,3 @@ def simple_samples(df):
 
 def norm_samples(df):
     return simple_samples(df).subtract(blank_data(df).values.squeeze())
-
-
-def get_calibration_data(df):
-    procd_data = norm_samples(df).T
-    max_idx = procd_data[[1]].idxmax().values[0]
-    max_abs = procd_data.loc[max_idx].values
-    conc = [50/i for i in procd_data.columns]
-    slope = linregress(conc, max_abs)[0]
-    return slope, max_idx
-
