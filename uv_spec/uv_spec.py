@@ -5,13 +5,19 @@ import pandas as pd
 from scipy.stats import linregress
 import sys
 
-cali_norm = input("Does the calibration file require normalisation?\nYes[Y], No[N]\n: ")
-sample_norm = input(
-    "Does the unknown sample file require normalisation?\nYes[Y], No[N]\n: "
-)
+if sys.argv[1] == 'demo':
+    cali_norm = 'y'
+    spl_norm = 'n'
+    df = pd.read_csv("data/calibration.csv")
+    unknown_spl = pd.read_csv("data/sample.csv")
+else:
+    df = sys.argv[1]
+    unknown_spl = sys.argv[2]
+    cali_norm = input("Does the calibration file require normalisation?\nYes[Y], No[N]\n: ")
+    spl_norm = input("Does the unknown sample file require normalisation?\nYes[Y], No[N]\n: ")
 
-df = pd.read_csv("data/calibration.csv")
-unknown_spl = pd.read_csv("data/sample.csv")
+
+
 
 
 def plot_spec(df):
@@ -38,7 +44,7 @@ def main():
     else:
         calib_df = pre_proc.simple_samples(df)
 
-    if sample_norm.lower() == "y":
+    if spl_norm.lower() == "y":
         spl_df = pre_proc.norm_samples(unknown_spl)
     else:
         spl_df = pre_proc.simple_samples(unknown_spl)
