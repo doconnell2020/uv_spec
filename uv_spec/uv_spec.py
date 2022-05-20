@@ -11,8 +11,8 @@ if sys.argv[1] == 'demo':
     df = pd.read_csv("data/calibration.csv")
     unknown_spl = pd.read_csv("data/sample.csv")
 else:
-    df = sys.argv[1]
-    unknown_spl = sys.argv[2]
+    df = pd.read_csv(sys.argv[1])
+    unknown_spl = pd.read_csv(sys.argv[2])
     cali_norm = input("Does the calibration file require normalisation?\nYes[Y], No[N]\n: ")
     spl_norm = input("Does the unknown sample file require normalisation?\nYes[Y], No[N]\n: ")
 
