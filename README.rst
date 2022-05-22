@@ -3,12 +3,17 @@ uv_spec
 =======
 
 A simple commandline tool that takes some calibration data and an unknown 
-sample file file and returns the spectra plot of the calibration data and
+sample file and returns the spectra plot of the calibration data and
 the concentration of the unknown sample.
 
 The tool takes the form
 ::
     uv_spec <calibration file> <unknown sample file>
+
+When run you will be asked if either the calibration or sample data requires
+normalisation (blank subtractraction).
+
+The tool currently expects all data to be given in triplicate.
 
 To install and see a demo run the following:
 ::
