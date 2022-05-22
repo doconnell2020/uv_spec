@@ -1,4 +1,6 @@
-# uv_spec
+=======
+uv_spec
+=======
 
 A simple commandline tool that takes some calibration data and an unknown 
 sample file file and returns the spectra plot of the calibration data and
@@ -18,5 +20,5 @@ To install and see a demo run the following:
 
     poetry run python uv_spec demo
 
-The special `demo` argument uses the sample files found in the uv_spec/data
+The special demo argument uses the sample files found in the uv_spec/data
 directory
