@@ -15,7 +15,10 @@ normalisation (blank subtractraction).
 
 The tool currently expects all data to be given in triplicate.
 
-To install and see a demo run the following:
+====
+Installation
+====
+To install and see a demo, run the following:
 ::
     git clone https://github.com/doconnell2020/uv_spec.git
 
@@ -24,6 +27,7 @@ To install and see a demo run the following:
     poetry install
 
     poetry run python uv_spec.py demo
+    
 
-The special demo argument uses the sample files found in the uv_spec/data
+The special "demo" argument uses the sample files found in the uv_spec/data
 directory
