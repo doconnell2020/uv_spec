@@ -11,7 +11,7 @@ The tool takes the form
     uv_spec <calibration file> <unknown sample file>
 
 When run you will be asked if either the calibration or sample data requires
-normalisation (blank subtractraction).
+normalisation (blank subtraction).
 
 The tool currently expects all data to be given in triplicate.
 
