@@ -1,26 +1,33 @@
+import pandas as pd
 
-def restructure_data(df):
-    #Remove unnecessary lines
-    df = df.copy().dropna().reset_index().drop(['index', 'User: USER', 'Unnamed: 1'], axis=1)
+
+def restructure_data(df: pd.DataFrame) -> pd.DataFrame:
+    # Remove unnecessary lines
+    df = (
+        df.copy()
+        .dropna()
+        .reset_index()
+        .drop(["index", "User: USER", "Unnamed: 1"], axis=1)
+    )
     df.columns = df.iloc[0]
     df = df.drop(0)
-    #Cast all data to be float type for numerical operations
-    return df.astype('float')
-    
+    # Cast all data to be float type for numerical operations
+    return df.astype("float")
 
-def blank_data(df):
+
+def blank_data(df: pd.DataFrame) -> pd.DataFrame:
     df = restructure_data(df)
-    #Blanks are teh final three rows
+    # Blanks are teh final three rows
     blanks = df.tail(3)
-    return blanks.groupby(by='Dilution').mean()
-    
+    return blanks.groupby(by="Dilution").mean()
 
-def simple_samples(df):
+
+def simple_samples(df: pd.DataFrame) -> pd.DataFrame:
     df = restructure_data(df)
-    #The samples are all rows until the last 3, which are blanks
+    # The samples are all rows until the last 3, which are blanks
     samples = df.iloc[:-3]
-    return samples.groupby(by='Dilution').mean()
+    return samples.groupby(by="Dilution").mean()
 
 
-def norm_samples(df):
+def norm_samples(df: pd.DataFrame) -> pd.DataFrame:
     return simple_samples(df).subtract(blank_data(df).values.squeeze())

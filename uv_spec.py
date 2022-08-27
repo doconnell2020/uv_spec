@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import pre_proc
 
 from matplotlib import pyplot as plt
@@ -5,22 +7,23 @@ import pandas as pd
 from scipy.stats import linregress
 import sys
 
-if sys.argv[1] == 'demo':
-    cali_norm = 'y'
-    spl_norm = 'n'
+if sys.argv[1] == "demo":
+    cali_norm = "y"
+    spl_norm = "n"
     df = pd.read_csv("data/calibration.csv")
     unknown_spl = pd.read_csv("data/sample.csv")
 else:
     df = pd.read_csv(sys.argv[1])
     unknown_spl = pd.read_csv(sys.argv[2])
-    cali_norm = input("Does the calibration file require normalisation?\nYes[Y], No[N]\n: ")
-    spl_norm = input("Does the unknown sample file require normalisation?\nYes[Y], No[N]\n: ")
+    cali_norm = input(
+        "Does the calibration file require normalisation?\nYes[Y], No[N]\n: "
+    )
+    spl_norm = input(
+        "Does the unknown sample file require normalisation?\nYes[Y], No[N]\n: "
+    )
 
 
-
-
-
-def plot_spec(df):
+def plot_spec(df: pd.DataFrame) -> plt.axes:
     return df.copy().T.plot(
         xlabel="Wavelength (nm)",
         ylabel="Absorbance (au)",
@@ -29,7 +32,7 @@ def plot_spec(df):
     )
 
 
-def get_calibration_data(df):
+def get_calibration_data(df: pd.DataFrame) -> tuple:
     procd_data = df.T
     max_idx = procd_data[[1]].idxmax().values[0]
     max_abs = procd_data.loc[max_idx].values
