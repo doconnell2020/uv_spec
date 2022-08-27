@@ -41,7 +41,7 @@ def get_calibration_data(df: pd.DataFrame) -> tuple:
     return slope, max_idx
 
 
-def main():
+def main() -> None:
     if cali_norm.lower() == "y":
         calib_df = pre_proc.norm_samples(df)
     else:
