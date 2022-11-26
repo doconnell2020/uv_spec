@@ -24,7 +24,7 @@ else:
     spl_norm = input(
         "Does the unknown sample file require normalisation?\nYes[Y], No[N]\n: "
     )
-    num_repeats = input("How many replicates were performed?")
+    num_repeats = input("How many replicates were performed?\n")
 
 # Plot spectra
 def plot_spec(df: pd.DataFrame) -> plt.axes:
@@ -47,14 +47,14 @@ def get_calibration_data(df: pd.DataFrame) -> tuple:
 
 def main() -> None:
     if cali_norm.lower() == "y":
-        calib_df = pre_proc.norm_samples(df)
+        calib_df = pre_proc.norm_samples(df, num_repeats)
     else:
-        calib_df = pre_proc.simple_samples(df)
+        calib_df = pre_proc.simple_samples(df, num_repeats)
 
     if spl_norm.lower() == "y":
-        spl_df = pre_proc.norm_samples(unknown_spl)
+        spl_df = pre_proc.norm_samples(unknown_spl, num_repeats)
     else:
-        spl_df = pre_proc.simple_samples(unknown_spl)
+        spl_df = pre_proc.simple_samples(unknown_spl, num_repeats)
 
     plot_spec(calib_df)
     plt.show()
