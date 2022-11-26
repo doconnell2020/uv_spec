@@ -13,7 +13,7 @@ The tool takes the form
 When run you will be asked if either the calibration or sample data requires
 normalisation (blank subtraction).
 
-The tool currently expects all data to be given in triplicate.
+It will also ask how many replicates were performed.
 
 ====
 Installation

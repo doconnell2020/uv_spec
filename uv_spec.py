@@ -60,7 +60,7 @@ def main() -> None:
     plt.show()
 
     slope, max_idx = get_calibration_data(calib_df)
-    spl_abs_max = spl_df[max_idx][:3].mean()
+    spl_abs_max = spl_df[max_idx][:num_repeats].mean()
     concentration = spl_abs_max / slope
 
     print(
