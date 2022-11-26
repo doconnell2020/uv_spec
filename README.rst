@@ -26,7 +26,7 @@ To install and see a demo, run the following:
 
     poetry install
 
-    poetry run python uv_spec.py demo
+    poetry run python ./uv_spec.py demo
     
 
 The special "demo" argument uses the sample files found in the uv_spec/data
