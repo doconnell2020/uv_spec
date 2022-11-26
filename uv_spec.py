@@ -24,7 +24,7 @@ else:
     spl_norm = input(
         "Does the unknown sample file require normalisation?\nYes[Y], No[N]\n: "
     )
-    num_repeats = input("How many replicates were performed?\n")
+    num_repeats = int(input("How many replicates were performed?\n"))
 
 # Plot spectra
 def plot_spec(df: pd.DataFrame) -> plt.axes:

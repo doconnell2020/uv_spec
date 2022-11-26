@@ -25,7 +25,7 @@ def blank_data(df: pd.DataFrame, num_repeats: int) -> pd.DataFrame:
 def simple_samples(df: pd.DataFrame, num_repeats: int) -> pd.DataFrame:
     df = restructure_data(df)
     # The samples are all rows until the num_repeat final rows, which are blanks
-    samples = df.iloc[: (-1 * num_repeats)]
+    samples = df.iloc[:-num_repeats]
     return samples.groupby(by="Dilution").mean()
 
 
