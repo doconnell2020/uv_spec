@@ -7,11 +7,14 @@ import pandas as pd
 from scipy.stats import linregress
 import sys
 
+# Check for demonstration request
 if sys.argv[1] == "demo":
     cali_norm = "y"
     spl_norm = "n"
+    num_repeats = 3
     df = pd.read_csv("data/calibration.csv")
     unknown_spl = pd.read_csv("data/sample.csv")
+# Otherwise read args
 else:
     df = pd.read_csv(sys.argv[1])
     unknown_spl = pd.read_csv(sys.argv[2])
@@ -21,8 +24,9 @@ else:
     spl_norm = input(
         "Does the unknown sample file require normalisation?\nYes[Y], No[N]\n: "
     )
+    num_repeats = input("How many replicates were performed?")
 
-
+# Plot spectra
 def plot_spec(df: pd.DataFrame) -> plt.axes:
     return df.copy().T.plot(
         xlabel="Wavelength (nm)",

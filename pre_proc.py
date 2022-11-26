@@ -18,14 +18,14 @@ def restructure_data(df: pd.DataFrame) -> pd.DataFrame:
 def blank_data(df: pd.DataFrame) -> pd.DataFrame:
     df = restructure_data(df)
     # Blanks are teh final three rows
-    blanks = df.tail(3)
+    blanks = df.tail(num_repeats)
     return blanks.groupby(by="Dilution").mean()
 
 
 def simple_samples(df: pd.DataFrame) -> pd.DataFrame:
     df = restructure_data(df)
-    # The samples are all rows until the last 3, which are blanks
-    samples = df.iloc[:-3]
+    # The samples are all rows until the num_repeat final rows, which are blanks
+    samples = df.iloc[: (-1 * num_repeats)]
     return samples.groupby(by="Dilution").mean()
 
 
