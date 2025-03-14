@@ -1,30 +1,13 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+import argparse
+import sys
+
+import pandas as pd
+from matplotlib import pyplot as plt
+from scipy.stats import linregress
 
 import pre_proc
 
-from matplotlib import pyplot as plt
-import pandas as pd
-from scipy.stats import linregress
-import sys
-
-# Check for demonstration request
-if sys.argv[1] == "demo":
-    cali_norm = "y"
-    spl_norm = "n"
-    num_repeats = 3
-    df = pd.read_csv("data/calibration.csv")
-    unknown_spl = pd.read_csv("data/sample.csv")
-# Otherwise read args
-else:
-    df = pd.read_csv(sys.argv[1])
-    unknown_spl = pd.read_csv(sys.argv[2])
-    cali_norm = input(
-        "Does the calibration file require normalisation?\nYes[Y], No[N]\n: "
-    )
-    spl_norm = input(
-        "Does the unknown sample file require normalisation?\nYes[Y], No[N]\n: "
-    )
-    num_repeats = int(input("How many replicates were performed?\n"))
 
 # Plot spectra
 def plot_spec(df: pd.DataFrame) -> plt.axes:
@@ -46,26 +29,80 @@ def get_calibration_data(df: pd.DataFrame) -> tuple:
 
 
 def main() -> None:
-    if cali_norm.lower() == "y":
-        calib_df = pre_proc.norm_samples(df, num_repeats)
-    else:
-        calib_df = pre_proc.simple_samples(df, num_repeats)
+    parser = argparse.ArgumentParser(
+        description="Process spectroscopy data for calibration and sample analysis."
+    )
 
-    if spl_norm.lower() == "y":
-        spl_df = pre_proc.norm_samples(unknown_spl, num_repeats)
-    else:
-        spl_df = pre_proc.simple_samples(unknown_spl, num_repeats)
+    parser.add_argument(
+        "--calibration", "-c", type=str, help="Path to calibration data CSV file"
+    )
+    parser.add_argument(
+        "--sample", "-s", type=str, help="Path to unknown sample data CSV file"
+    )
+    parser.add_argument(
+        "--calibration-normalize",
+        "-cn",
+        action="store_true",
+        help="Normalize the calibration data",
+    )
+    parser.add_argument(
+        "--sample-normalize",
+        "-sn",
+        action="store_true",
+        help="Normalize the sample data",
+    )
+    parser.add_argument(
+        "--repeats",
+        "-r",
+        type=int,
+        default=3,
+        help="Number of replicates performed (default: 3)",
+    )
+    parser.add_argument(
+        "--demo",
+        action="store_true",
+        help="Run in demonstration mode with default files",
+    )
 
+    args = parser.parse_args()
+
+    if args.demo:
+        calib_df = pd.read_csv("data/calibration.csv")
+        spl_df = pd.read_csv("data/sample.csv")
+        cali_norm = True
+        spl_norm = False
+        num_repeats = 3
+    else:
+        if not args.calibration or not args.sample:
+            parser.error(
+                "Both calibration and sample files are required unless using --demo"
+            )
+
+        calib_df = pd.read_csv(args.calibration)
+        spl_df = pd.read_csv(args.sample)
+        cali_norm = args.calibration_normalize
+        spl_norm = args.sample_normalize
+        num_repeats = args.repeats
+
+    if cali_norm:
+        calib_df = pre_proc.norm_samples(calib_df, num_repeats)
+    else:
+        calib_df = pre_proc.simple_samples(calib_df, num_repeats)
+
+    if spl_norm:
+        spl_df = pre_proc.norm_samples(spl_df, num_repeats)
+    else:
+        spl_df = pre_proc.simple_samples(spl_df, num_repeats)
+
+    # Plot and analyze
     plot_spec(calib_df)
     plt.show()
 
     slope, max_idx = get_calibration_data(calib_df)
-    spl_abs_max = spl_df[max_idx][:num_repeats].mean()
+    spl_abs_max = spl_df[max_idx].loc[:num_repeats].mean()
     concentration = spl_abs_max / slope
 
-    print(
-        "The unknown sample concentration is ", round(concentration, 1), "\u00B10.5mg"
-    )
+    print(f"The unknown sample concentration is {round(concentration, 1)}\u00b10.5mg")
 
 
 if __name__ == "__main__":
