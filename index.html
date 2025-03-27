@@ -45,12 +45,15 @@
 
 <body>
   <div class="container">
-    <h1>File Transfer</h1>
-
-    <div class="upload-section">
-      <h2>Upload Files</h2>
+    <h1>Upload Multiple Files</h1>
+    
       <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
-        <input type="file" name="fileUpload" required>
+        <!-- Allow mulitple files -->
+        <label for="fileUpload" class="upload-btn">Choose Files</label>
+        <input type="file" name="files" id="fileUpload" multiple required>
+
+        <div id="fileList">No files selected</div>
+
         <input type="submit" value="Upload File">
       </form>
       <div id="status"></div>
