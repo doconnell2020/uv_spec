@@ -46,23 +46,23 @@
 <body>
   <div class="container">
     <h1>Upload Multiple Files</h1>
-    
-      <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
-        <!-- Allow mulitple files -->
-        <label for="fileUpload" class="upload-btn">Choose Files</label>
-        <input type="file" name="files" id="fileUpload" multiple required>
 
-        <div id="fileList">No files selected</div>
+    <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+      <!-- Allow mulitple files -->
+      <label for="fileUpload" class="upload-btn">Choose Files</label>
+      <input type="file" name="files" id="fileUpload" multiple required>
 
-        <input type="submit" value="Upload File">
-      </form>
-      <div id="status"></div>
-    </div>
+      <div id="fileList">No files selected</div>
 
-    <div class="download-section">
-      <h2>Download Files</h2>
-      <button onclick="downloadFile()">Download</button>
-    </div>
+      <input type="submit" value="Upload File">
+    </form>
+    <div id="status"></div>
+  </div>
+
+  <div class="download-section">
+    <h2>Download Files</h2>
+    <button onclick="downloadFile()">Download</button>
+  </div>
   </div>
 
   <script>
