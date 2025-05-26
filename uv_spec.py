@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import argparse
+import datetime
+from typing import Tuple
 
 import pandas as pd
 from matplotlib import pyplot as plt
@@ -10,19 +12,35 @@ import pre_proc
 
 # Plot spectra
 def plot_spec(df: pd.DataFrame) -> plt.axes:
+    """Plot the UV spectra of the data.
+
+    Args:
+        df: DataFrame of preprocessed data.
+
+    Returns:
+        Plot object that can be shown or saved.
+    """
     return df.copy().T.plot(
         xlabel="Wavelength (nm)",
         ylabel="Absorbance (au)",
-        title="Calibration Spectra",
+        title=f"Calibration Spectra {datetime.datetime.now().date()}",
         figsize=(15, 9),
     )
 
 
-def get_calibration_data(df: pd.DataFrame) -> tuple:
+def get_calibration_data(df: pd.DataFrame) -> Tuple[float, int]:
+    """Calculate the slope and maximum of the data.
+
+    Args:
+        df: DataFrame of preprocessed data.
+
+    Returns:
+        slope and maximum of the data
+    """
     procd_data = df.T
     max_idx = procd_data[[1]].idxmax().values[0]
     max_abs = procd_data.loc[max_idx].values
-    conc = [50 / i for i in procd_data.columns]
+    conc = [50 / i for i in procd_data.columns]  # Set as 50 for toy uses
     slope = linregress(conc, max_abs)[0]
     return slope, max_idx
 
