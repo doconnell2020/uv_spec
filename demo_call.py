@@ -1,5 +1,4 @@
 import requests
-import json
 import base64
 from PIL import Image
 import io

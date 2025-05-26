@@ -1,15 +1,17 @@
 [project]
 name = "uv-spec"
 version = "0.1.0"
-description = "Add your description here"
+description = """A simple commandline tool that takes some calibration data and an unknown
+                sample file and returns the spectra plot of the calibration data and
+                the concentration of the unknown sample."""
 readme = "README.md"
 requires-python = "~=3.11"
 dependencies = [
-    "flask>=3.1.0",
-    "matplotlib>=3.9.2",
-    "pandas>=2.2.3",
-    "pyqt6>=6.7.1",
-    "requests>=2.32.3",
-    "ruff>=0.7.2",
-    "scipy>=1.14.1",
+    "flask~=3.1.0",
+    "matplotlib~=3.9.2",
+    "pandas~=2.2.3",
+    "pyqt6~=6.7.1",
+    "requests~=2.32.3",
+    "ruff~=0.7.2",
+    "scipy~=1.14.1",
 ]

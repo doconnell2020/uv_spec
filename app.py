@@ -4,9 +4,8 @@ import io
 import pre_proc
 import pandas as pd
 from scipy.stats import linregress
-import tempfile
 import base64
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
@@ -21,7 +20,6 @@ def plot_spec(df: pd.DataFrame) -> str:
     import matplotlib
 
     matplotlib.use("Agg")  # Use non-interactive backend
-    import matplotlib.pyplot as plt
 
     ax = df.copy().T.plot(
         xlabel="Wavelength (nm)",
