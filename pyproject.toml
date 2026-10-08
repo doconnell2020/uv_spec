@@ -7,10 +7,6 @@ description = """A simple commandline tool that takes some calibration data and 
 readme = "README.md"
 requires-python = "~=3.11"
 dependencies = [
-    "flask~=3.1.0",
     "matplotlib~=3.9.2",
-    "pandas~=2.2.3",
     "pyqt6~=6.7.1",
-    "requests~=2.32.3",
-    "scipy~=1.14.1",
 ]
