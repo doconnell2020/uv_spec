@@ -1,78 +1,85 @@
-import pandas as pd
+"""Read CLARIOstar exports and average spectra using the standard library."""
+
+import csv
+from collections import defaultdict
+from dataclasses import dataclass
+from math import isfinite
+from pathlib import Path
+from statistics import fmean
 
 
-def restructure_data(df: pd.DataFrame) -> pd.DataFrame:
-    """Restructure the incoming data for further processing.
+@dataclass
+class Spectra:
+    """Wavelengths in file order and averaged absorbances keyed by dilution."""
 
-    Args:
-        df: The raw dataframe read from the original input files.
+    wavelengths: tuple[float, ...]
+    samples: dict[float, tuple[float, ...]]
 
-    Returns:
-        The restructured dataframe, cast as float type for numerical operations.
 
+def read_spectra(path: Path, num_repeats: int, *, normalize: bool = False) -> Spectra:
+    """Read an export, excluding its final ``num_repeats`` blank rows.
+
+    Replicates need not be adjacent: dilution identifies a sample. If requested,
+    subtract the mean blank spectrum from each sample's mean spectrum.
     """
-    df = (
-        df.copy()
-        .dropna()
-        .reset_index()
-        .drop(["index", "User: USER", "Unnamed: 1"], axis=1)
-    )
-    df.columns = df.iloc[0]  # Make row column labels
-    df = df.drop(0)  # Drop row of column labels
-    return df.astype("float")
+    if num_repeats < 1:
+        raise ValueError("Number of replicates must be positive")
 
+    # newline='' lets csv handle quoted newlines; utf-8-sig accepts BOM exports.
+    with path.open(encoding="utf-8-sig", newline="") as source:
+        reader = csv.reader(source, strict=True)
+        header = next(
+            (row for row in reader if row[:3] == ["Well", "Sample", "Dilution"]),
+            None,
+        )
+        if header is None:
+            raise ValueError(f"{path}: missing Well,Sample,Dilution header")
+        try:
+            wavelengths = tuple(map(float, header[3:]))
+        except ValueError as exc:
+            raise ValueError(f"{path}: wavelengths must be numeric") from exc
+        if (
+            not wavelengths
+            or not all(isfinite(w) and w > 0 for w in wavelengths)
+            or len(set(wavelengths)) != len(wavelengths)
+        ):
+            raise ValueError(f"{path}: wavelengths must be unique, finite and positive")
 
-def blank_data(df: pd.DataFrame, num_repeats: int) -> pd.DataFrame:
-    """Creates a separate DataFrame of the blank (control) samples.
+        rows = []
+        for row in reader:
+            if not any(field.strip() for field in row):
+                continue
+            try:
+                if len(row) != len(header):
+                    raise ValueError(f"expected {len(header)} columns, got {len(row)}")
+                values = tuple(map(float, row[2:]))
+                if not all(map(isfinite, values)) or values[0] <= 0:
+                    raise ValueError(
+                        "values must be finite and dilution must be positive"
+                    )
+            except ValueError as exc:
+                raise ValueError(f"{path}: line {reader.line_num}: {exc}") from exc
+            rows.append(values)
 
-    Samples are returned as a DataFrame, grouped by the Dilution column. Dilution acts as
-    an identifier for distinct samples from the spectrophotometer.
+    if len(rows) <= num_repeats:
+        raise ValueError(
+            f"{path}: need sample rows before the final {num_repeats} blanks"
+        )
 
-    Args:
-        df:  The preprocessed data from the raw input data.
-        num_repeats: The number of replicate samples.
-
-    Returns:
-        The blank data dataframe.
-    """
-    df = restructure_data(df.copy())
-    # Blanks are the final rows
-    blanks = df.tail(num_repeats)
-    return blanks.groupby(by="Dilution").mean()
-
-
-def simple_samples(df: pd.DataFrame, num_repeats: int) -> pd.DataFrame:
-    """Process the data in a simple case without blank subtraction.
-
-    Samples are returned as a DataFrame, grouped by the Dilution column. Dilution acts as
-    an identifier for distinct samples from the spectrophotometer.
-
-    Args:
-        df: Raw input dataframe.
-        num_repeats: The number of replicate samples.
-
-    Returns:
-        The processed data, grouped by "Dilution".
-    """
-    df = restructure_data(df.copy())
-    # The samples are all rows until the num_repeat final rows, which are blanks
-    samples = df.iloc[:-num_repeats]
-    return samples.groupby(by="Dilution").mean()
-
-
-def norm_samples(df: pd.DataFrame, num_repeats: int) -> pd.DataFrame:
-    """Process the data, normalising with blank subtraction.
-
-    Samples are returned as a DataFrame, grouped by the Dilution column. Dilution acts as
-    an identifier for distinct samples from the spectrophotometer.
-
-    Args:
-        df: Raw input dataframe.
-        num_repeats: The number of replicate samples.
-
-    Returns:
-        The processed data, grouped by "Dilution".
-    """
-    return simple_samples(df.copy(), num_repeats).subtract(
-        blank_data(df, num_repeats).values.squeeze()
-    )
+    groups = defaultdict(list)
+    for dilution, *absorbances in rows[:-num_repeats]:
+        groups[dilution].append(absorbances)
+    samples = {
+        dilution: tuple(map(fmean, zip(*groups[dilution], strict=True)))
+        for dilution in sorted(groups)
+    }
+    if normalize:
+        blanks = rows[-num_repeats:]
+        if len({row[0] for row in blanks}) != 1:
+            raise ValueError(f"{path}: blank rows must have a single dilution")
+        blank_mean = tuple(map(fmean, zip(*(row[1:] for row in blanks), strict=True)))
+        samples = {
+            dilution: tuple(a - b for a, b in zip(values, blank_mean, strict=True))
+            for dilution, values in samples.items()
+        }
+    return Spectra(wavelengths, samples)

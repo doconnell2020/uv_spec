@@ -1,48 +1,68 @@
 #!/usr/bin/env python3
 import argparse
-import datetime
-from typing import Tuple
+import csv
+from datetime import date
+from pathlib import Path
+from statistics import fmean, linear_regression
+from typing import TYPE_CHECKING
 
-import pandas as pd
-from matplotlib import pyplot as plt
-from scipy.stats import linregress
+from pre_proc import Spectra, read_spectra
 
-import pre_proc
+if TYPE_CHECKING:
+    from matplotlib.axes import Axes
 
 
-# Plot spectra
-def plot_spec(df: pd.DataFrame) -> plt.axes:
-    """Plot the UV spectra of the data.
+def plot_spec(spectra: Spectra) -> "Axes":
+    """Plot each dilution's spectrum; load the plotting stack only when needed."""
+    from matplotlib import pyplot as plt
 
-    Args:
-        df: DataFrame of preprocessed data.
-
-    Returns:
-        Plot object that can be shown or saved.
-    """
-    return df.copy().T.plot(
+    _, axes = plt.subplots(figsize=(15, 9))
+    for dilution, absorbances in spectra.samples.items():
+        axes.plot(spectra.wavelengths, absorbances, label=f"{dilution:g}")
+    axes.set(
         xlabel="Wavelength (nm)",
         ylabel="Absorbance (au)",
-        title=f"Calibration Spectra {datetime.datetime.now().date()}",
-        figsize=(15, 9),
+        title=f"Calibration Spectra {date.today()}",
     )
+    axes.legend(title="Dilution")
+    return axes
 
 
-def get_calibration_data(df: pd.DataFrame) -> Tuple[float, int]:
-    """Calculate the slope and maximum of the data.
+def get_calibration_data(spectra: Spectra) -> tuple[float, float]:
+    """Fit absorbance against 50 / dilution at dilution 1's peak wavelength.
 
-    Args:
-        df: DataFrame of preprocessed data.
-
-    Returns:
-        slope and maximum of the data
+    Preserve the original ordinary least-squares fit (including its intercept),
+    while returning only the slope used by the toy concentration calculation.
+    Equal maxima select the first wavelength in file order.
     """
-    procd_data = df.T
-    max_idx = procd_data[[1]].idxmax().values[0]
-    max_abs = procd_data.loc[max_idx].values
-    conc = [50 / i for i in procd_data.columns]  # Set as 50 for toy uses
-    slope = linregress(conc, max_abs)[0]
-    return slope, max_idx
+    try:
+        reference = spectra.samples[1]
+    except KeyError as exc:
+        raise ValueError("Calibration requires a dilution 1 reference") from exc
+    peak = max(range(len(reference)), key=reference.__getitem__)
+    concentrations = [50 / dilution for dilution in spectra.samples]
+    absorbances = [values[peak] for values in spectra.samples.values()]
+    slope, _ = linear_regression(concentrations, absorbances)
+    if slope == 0:
+        raise ValueError("Calibration slope must be nonzero")
+    return slope, spectra.wavelengths[peak]
+
+
+def get_concentration(calibration: Spectra, sample: Spectra, num_repeats: int) -> float:
+    """Preserve the original mean over sample dilution labels <= num_repeats."""
+    slope, wavelength = get_calibration_data(calibration)
+    try:
+        peak = sample.wavelengths.index(wavelength)
+    except ValueError as exc:
+        raise ValueError(
+            f"Sample is missing calibration wavelength {wavelength:g}"
+        ) from exc
+    absorbance = fmean(
+        values[peak]
+        for dilution, values in sample.samples.items()
+        if dilution <= num_repeats
+    )
+    return absorbance / slope
 
 
 def main() -> None:
@@ -51,10 +71,10 @@ def main() -> None:
     )
 
     parser.add_argument(
-        "--calibration", "-c", type=str, help="Path to calibration data CSV file"
+        "--calibration", "-c", type=Path, help="Path to calibration data CSV file"
     )
     parser.add_argument(
-        "--sample", "-s", type=str, help="Path to unknown sample data CSV file"
+        "--sample", "-s", type=Path, help="Path to unknown sample data CSV file"
     )
     parser.add_argument(
         "--calibration-normalize",
@@ -84,40 +104,31 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.demo:
-        calib_df = pd.read_csv("data/calibration.csv")
-        spl_df = pd.read_csv("data/sample.csv")
-        cali_norm = True
-        spl_norm = False
-        num_repeats = 3
+        data_dir = Path(__file__).resolve().parent / "data"
+        calibration_path = data_dir / "calibration.csv"
+        sample_path = data_dir / "sample.csv"
+        cali_norm, spl_norm, num_repeats = True, False, 3
     else:
         if not args.calibration or not args.sample:
             parser.error(
                 "Both calibration and sample files are required unless using --demo"
             )
-
-        calib_df = pd.read_csv(args.calibration)
-        spl_df = pd.read_csv(args.sample)
+        calibration_path, sample_path = args.calibration, args.sample
         cali_norm = args.calibration_normalize
         spl_norm = args.sample_normalize
         num_repeats = args.repeats
 
-    if cali_norm:
-        calib_df = pre_proc.norm_samples(calib_df, num_repeats)
-    else:
-        calib_df = pre_proc.simple_samples(calib_df, num_repeats)
+    try:
+        calibration = read_spectra(calibration_path, num_repeats, normalize=cali_norm)
+        sample = read_spectra(sample_path, num_repeats, normalize=spl_norm)
+        concentration = get_concentration(calibration, sample, num_repeats)
+    except (OSError, ValueError, csv.Error) as exc:
+        parser.error(str(exc))
 
-    if spl_norm:
-        spl_df = pre_proc.norm_samples(spl_df, num_repeats)
-    else:
-        spl_df = pre_proc.simple_samples(spl_df, num_repeats)
+    plot_spec(calibration)
+    from matplotlib import pyplot as plt
 
-    # Plot and analyze
-    plot_spec(calib_df)
     plt.show()
-
-    slope, max_idx = get_calibration_data(calib_df)
-    spl_abs_max = spl_df[max_idx].loc[:num_repeats].mean()
-    concentration = spl_abs_max / slope
 
     print(f"The unknown sample concentration is {round(concentration, 1)}\u00b10.5mg")
 
